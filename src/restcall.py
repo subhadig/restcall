@@ -65,7 +65,11 @@ def get_responsedata(res):
             'resBody': res.json(),
             }
 
-    if res.headers['Content-Type'] == 'application/json':
+    content_type = res.headers['Content-Type']
+    if ';' in content_type:
+        content_type = content_type[:content_type.index(';')]
+
+    if content_type == 'application/json':
         res_data['resBody'] = res.json()
     else:
         res_data['resBody'] = res.text
@@ -93,8 +97,18 @@ def callrest(filepath):
         raise NotImplementedError('HTTP method not supported')
 
     template |= res_data
-    res_filepath = path.dirname(filepath) + path.sep + path.basename(filepath)[:-5] + '-res.json'
+
+    template_dir = path.dirname(filepath)
+    res_filename = path.basename(filepath)[:-5] + '-res.json'
+    if template_dir:
+        res_filepath = template_dir + path.sep + res_filename
+    else:
+        res_filepath = res_filename
+
     write_template(res_filepath, template)
+
+    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
+        res_filepath))
 
 
 def main():
