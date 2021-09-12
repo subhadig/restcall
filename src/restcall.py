@@ -25,6 +25,11 @@ def write_template(filepath, template):
         json.dump(template, f, indent=4)
 
 
+def write_content(filepath, content):
+    with open(filepath, 'w+b') as f:
+        f.write(content)
+
+
 def generate_template(filepath):
     template = {
             'url':'',
@@ -34,6 +39,7 @@ def generate_template(filepath):
             'reqContentType': '',
             'reqHeaders': {},
             'reqPayload': {},
+            'resFile': "",
             }
     write_template(filepath, template)
 
@@ -58,11 +64,10 @@ def get_reqheaders(template):
     return req_headers
 
 
-def get_responsedata(res):
+def get_responsedata(res, template, filepath):
     res_data = {
             'resStatus': res.status_code,
             'resHeaders': dict(res.headers),
-            'resBody': res.json(),
             }
 
     content_type = res.headers['Content-Type']
@@ -71,18 +76,28 @@ def get_responsedata(res):
 
     if content_type == 'application/json':
         res_data['resBody'] = res.json()
+
+    elif content_type == 'application/pdf':
+        if template['resFile']:
+            resfile = template['resFile']
+        else:
+            resfile = filepath[:-5] + '.pdf'
+            template['resFile'] = resfile
+        write_content(resfile, res.content)
+        res_data['resBody'] = "Binary response has been written to " + resfile
+
     else:
         res_data['resBody'] = res.text
 
     return res_data
 
 
-def do_call(template):
+def do_call(template, filepath):
     res = requests.request(template['httpMethod'],
             template['url'],
             headers=get_reqheaders(template),
             data=get_payload(template))
-    return get_responsedata(res)
+    return get_responsedata(res, template, filepath)
 
 
 def callrest(filepath):
@@ -90,20 +105,15 @@ def callrest(filepath):
         template = json.load(f)
 
     if template['httpMethod'] == 'GET':
-        res_data = do_call(template)
+        res_data = do_call(template, filepath)
     elif template['httpMethod'] == 'POST':
-        res_data = do_call(template)
+        res_data = do_call(template, filepath)
     else:
         raise NotImplementedError('HTTP method not supported')
 
-    template |= res_data
+    template = { **template, **res_data }
 
-    template_dir = path.dirname(filepath)
-    res_filename = path.basename(filepath)[:-5] + '-res.json'
-    if template_dir:
-        res_filepath = template_dir + path.sep + res_filename
-    else:
-        res_filepath = res_filename
+    res_filepath = filepath[:-5] + '-res.json'
 
     write_template(res_filepath, template)
 
