@@ -23,6 +23,7 @@ The generated template looks like this:
     "reqContentType": "",
     "reqHeaders": {},
     "reqPayload": {}
+    "resFile": ""
 }
 ```
 Edit the template and populate the required values.
@@ -34,6 +35,7 @@ Here are the parameters, their meaning and the allowed values:
 - reqContentType - the request content type. eg. `application/json`
 - reqHeaders - the request headers
 - reqPayload - the request body
+- resFile - the file path for storing binary response
 
 ### Make the REST call
 

@@ -64,6 +64,16 @@ def get_reqheaders(template):
     return req_headers
 
 
+def handle_binary_response(template, filepath, file_ext, content):
+    if template['resFile']:
+        resfile = template['resFile']
+    else:
+        resfile = filepath[:-5] + file_ext
+        template['resFile'] = resfile
+    write_content(resfile, content)
+    return "Binary response has been written to " + resfile
+
+
 def get_responsedata(res, template, filepath):
     res_data = {
             'resStatus': res.status_code,
@@ -78,13 +88,12 @@ def get_responsedata(res, template, filepath):
         res_data['resBody'] = res.json()
 
     elif content_type == 'application/pdf':
-        if template['resFile']:
-            resfile = template['resFile']
-        else:
-            resfile = filepath[:-5] + '.pdf'
-            template['resFile'] = resfile
-        write_content(resfile, res.content)
-        res_data['resBody'] = "Binary response has been written to " + resfile
+        res_data['resBody'] = handle_binary_response(template,
+                filepath, '.pdf', res.content)
+
+    elif content_type == 'application/zip':
+        res_data['resBody'] = handle_binary_response(template,
+                filepath, '.zip', res.content)
 
     else:
         res_data['resBody'] = res.text
@@ -121,8 +130,33 @@ def callrest(filepath):
         res_filepath))
 
 
+def usage():
+    return '''
+    restcall.py [-h] [-g] filepath
+
+    Generate a template:
+        restcall -g get-service-name.json
+        restcall -g post-service-name.json
+
+    Edit the template and populate the required values:
+        - url - the REST URL
+        - httpMethod - GET, POST, PUT, PATCH, DELETE
+        - reqAuthType - none, bearer
+        - reqAuthToken - the actual token if the reqAuthType is `bearer`
+        - reqContentType - the request content type. eg. `application/json`
+        - reqHeaders - the request headers
+        - reqPayload - the request body
+        - resFile - the file path for storing binary response
+
+    Make the REST call:
+        restcall get-service-name.json
+
+    The response will be stored in get-service-name-res.json.
+    '''
+
+
 def main():
-    parser=argparse.ArgumentParser()
+    parser=argparse.ArgumentParser(description='Make restcalls!', usage=usage())
     parser.add_argument('filepath', help='Path to the restcall template')
     parser.add_argument('-g', '--generate', action='store_true',
             help='Generate restcall template')
