@@ -4,6 +4,7 @@ import argparse
 import json
 from os import path
 import requests
+import traceback
 
 
 def get_httpmethod(filepath):
@@ -80,7 +81,8 @@ def get_responsedata(res, template, filepath):
             'resHeaders': dict(res.headers),
             }
 
-    content_type = res.headers['Content-Type']
+    content_type = res.headers['Content-Type'] if 'Content-Type' in res.headers else ""
+
     if ';' in content_type:
         content_type = content_type[:content_type.index(';')]
 
@@ -170,6 +172,9 @@ def main():
             callrest(filepath)
         except KeyboardInterrupt:
             print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
+        except Exception as e:
+            print("\nERROR: Restcall failed. Here are the error details.")
+            traceback.print_exc()
 
 if __name__=='__main__':
     main()
