@@ -166,7 +166,10 @@ def main():
     if args.generate:
         generate_template(filepath)
     else:
-        callrest(filepath)
+        try:
+            callrest(filepath)
+        except KeyboardInterrupt:
+            print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
 
 if __name__=='__main__':
     main()
