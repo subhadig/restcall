@@ -5,6 +5,7 @@ import json
 from os import path
 import requests
 import traceback
+from requests.exceptions import ConnectionError
 
 
 def get_httpmethod(filepath):
@@ -172,8 +173,10 @@ def main():
             callrest(filepath)
         except KeyboardInterrupt:
             print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
+        except ConnectionError as ce:
+            print("\nWARN: Restcall failed due to ConnectionError:" + str(ce))
         except Exception as e:
-            print("\nERROR: Restcall failed. Here are the error details.")
+            print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
             traceback.print_exc()
 
 if __name__=='__main__':
