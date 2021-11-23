@@ -22,7 +22,7 @@ The generated template looks like this:
     "reqAuthToken": "",
     "reqContentType": "",
     "reqHeaders": {},
-    "reqPayload": {}
+    "reqPayload": "",
     "resFile": ""
 }
 ```
@@ -34,7 +34,7 @@ Here are the parameters, their meaning and the allowed values:
 - reqAuthToken - the actual token if the reqAuthType is `bearer`
 - reqContentType - the request content type. eg. `application/json`
 - reqHeaders - the request headers
-- reqPayload - the request body
+- reqPayload - the request body. If binary, provide the file path.
 - resFile - the file path for storing binary response
 
 ### Make the REST call

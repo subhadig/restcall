@@ -40,7 +40,7 @@ def generate_template(filepath):
             'reqAuthToken': '',
             'reqContentType': '',
             'reqHeaders': {},
-            'reqPayload': {},
+            'reqPayload': "",
             'resFile': "",
             }
     write_template(filepath, template)
@@ -49,6 +49,10 @@ def generate_template(filepath):
 def get_payload(template):
     if template['reqContentType'] == 'application/json':
         payload = json.dumps(template['reqPayload'])
+
+    elif template['reqContentType'] == 'application/zip':
+        payload = open(template['reqPayload'], 'rb')
+
     else:
         payload = template['reqPayload']
     return payload
@@ -120,6 +124,8 @@ def callrest(filepath):
         res_data = do_call(template, filepath)
     elif template['httpMethod'] == 'POST':
         res_data = do_call(template, filepath)
+    elif template['httpMethod'] == 'PUT':
+        res_data = do_call(template, filepath)
     else:
         raise NotImplementedError('HTTP method not supported')
 
@@ -148,7 +154,7 @@ def usage():
         - reqAuthToken - the actual token if the reqAuthType is `bearer`
         - reqContentType - the request content type. eg. `application/json`
         - reqHeaders - the request headers
-        - reqPayload - the request body
+        - reqPayload - the request body. If binary, provide the file path.
         - resFile - the file path for storing binary response
 
     Make the REST call:
