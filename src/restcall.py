@@ -6,6 +6,8 @@ from os import path
 import requests
 import traceback
 from requests.exceptions import ConnectionError
+import base64
+import urllib3
 
 
 def get_httpmethod(filepath):
@@ -63,6 +65,8 @@ def get_reqheaders(template):
 
     if template['reqAuthType'] == 'bearer':
         req_headers['Authorization'] = 'Bearer ' + template['reqAuthToken']
+    elif template['reqAuthType'] == 'basic':
+        req_headers['Authorization'] = 'Basic ' + str(base64.b64encode(bytes(template['reqAuthToken'], 'utf-8')), 'utf-8')
 
     if template['reqContentType']:
         req_headers['Content-Type'] = template['reqContentType']
@@ -109,10 +113,15 @@ def get_responsedata(res, template, filepath):
 
 
 def do_call(template, filepath):
+    # Disabling warnings for unverified HTTPS requests
+    # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+    urllib3.disable_warnings()
+
     res = requests.request(template['httpMethod'],
             template['url'],
             headers=get_reqheaders(template),
-            data=get_payload(template))
+            data=get_payload(template),
+            verify=False)
     return get_responsedata(res, template, filepath)
 
 
