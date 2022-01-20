@@ -8,6 +8,7 @@ import traceback
 from requests.exceptions import ConnectionError
 import base64
 import urllib3
+from curlify import to_curl
 
 
 def get_httpmethod(filepath):
@@ -117,26 +118,27 @@ def do_call(template, filepath):
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
     urllib3.disable_warnings()
 
-    res = requests.request(template['httpMethod'],
+    return requests.request(template['httpMethod'],
             template['url'],
             headers=get_reqheaders(template),
             data=get_payload(template),
             verify=False)
-    return get_responsedata(res, template, filepath)
 
 
-def callrest(filepath):
+def callrest(filepath, curlify):
     with open(filepath) as f:
         template = json.load(f)
 
     if template['httpMethod'] == 'GET':
-        res_data = do_call(template, filepath)
+        res = do_call(template, filepath)
     elif template['httpMethod'] == 'POST':
-        res_data = do_call(template, filepath)
+        res = do_call(template, filepath)
     elif template['httpMethod'] == 'PUT':
-        res_data = do_call(template, filepath)
+        res = do_call(template, filepath)
     else:
         raise NotImplementedError('HTTP method not supported')
+
+    res_data = get_responsedata(res, template, filepath)
 
     template = { **template, **res_data }
 
@@ -147,10 +149,13 @@ def callrest(filepath):
     print('Response status: {}. Output stored in {}'.format(template['resStatus'],
         res_filepath))
 
+    if curlify:
+        print(to_curl(res.request, verify=False))
+
 
 def usage():
     return '''
-    restcall.py [-h] [-t] filepath
+    restcall.py [-h] [-t] [-c] filepath
 
     Generate a template:
         restcall -t get-service-name.json
@@ -169,6 +174,9 @@ def usage():
     Make the REST call:
         restcall get-service-name.json
 
+    Output equivalent curl command:
+        restcall -c get-service-name.json
+
     The response will be stored in get-service-name-res.json.
     '''
 
@@ -178,6 +186,8 @@ def main():
     parser.add_argument('filepath', help='Path to the restcall template')
     parser.add_argument('-t', '--template', action='store_true',
             help='Generate restcall template')
+    parser.add_argument('-c', '--curlify', action='store_true',
+            help='Generate curl command for the REST call')
 
     args = parser.parse_args()
     filepath = args.filepath
@@ -185,7 +195,7 @@ def main():
         generate_template(filepath)
     else:
         try:
-            callrest(filepath)
+            callrest(filepath, args.curlify)
         except KeyboardInterrupt:
             print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
         except ConnectionError as ce:
