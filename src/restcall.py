@@ -150,11 +150,11 @@ def callrest(filepath):
 
 def usage():
     return '''
-    restcall.py [-h] [-g] filepath
+    restcall.py [-h] [-t] filepath
 
     Generate a template:
-        restcall -g get-service-name.json
-        restcall -g post-service-name.json
+        restcall -t get-service-name.json
+        restcall -t post-service-name.json
 
     Edit the template and populate the required values:
         - url - the REST URL
@@ -176,12 +176,12 @@ def usage():
 def main():
     parser=argparse.ArgumentParser(description='Make restcalls!', usage=usage())
     parser.add_argument('filepath', help='Path to the restcall template')
-    parser.add_argument('-g', '--generate', action='store_true',
+    parser.add_argument('-t', '--template', action='store_true',
             help='Generate restcall template')
 
     args = parser.parse_args()
     filepath = args.filepath
-    if args.generate:
+    if args.template:
         generate_template(filepath)
     else:
         try:

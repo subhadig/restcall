@@ -5,9 +5,9 @@ A small command line script to invoke REST APIs
 
 ### Generate a template
 ```
-restcall -g get-service-name.json
+restcall -t get-service-name.json
 
-restcall -g post-service-name.json
+restcall -t post-service-name.json
 ```
 
 ### Modify the generated template
