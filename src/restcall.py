@@ -129,11 +129,7 @@ def callrest(filepath, curlify):
     with open(filepath) as f:
         template = json.load(f)
 
-    if template['httpMethod'] == 'GET':
-        res = do_call(template, filepath)
-    elif template['httpMethod'] == 'POST':
-        res = do_call(template, filepath)
-    elif template['httpMethod'] == 'PUT':
+    if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH']:
         res = do_call(template, filepath)
     else:
         raise NotImplementedError('HTTP method not supported')
