@@ -11,7 +11,38 @@ import urllib3
 from curlify import to_curl
 
 
-def get_httpmethod(filepath):
+def usage():
+    return '''
+    restcall.py [-h] [-t] [-c] filepath
+
+    Generate a template:
+        restcall -t get-service-name.json
+        restcall -t post-service-name.json
+
+    Edit the template and populate the required values:
+        - url - the REST URL
+        - httpMethod - GET, POST, PUT, PATCH, DELETE
+        - reqAuthType - `none`, `bearer`, `bearer_generate`, `basic`
+        - reqAuthToken
+            - the actual token if the reqAuthType is `bearer`
+            - filepath to the restcall template to generate the token if the reqAuthType is `bearer_generate`
+            - `username:password` if the reqAuthType is `basic`
+        - reqContentType - the request content type. eg. `application/json`
+        - reqHeaders - the request headers
+        - reqPayload - the request body. If binary, provide the file path.
+        - resFile - the file path for storing binary response
+
+    Make the REST call:
+        restcall get-service-name.json
+
+    Output equivalent curl command:
+        restcall -c get-service-name.json
+
+    The response will be stored in get-service-name-res.json.
+    '''
+
+
+def get_httpmethod(filepath:str):
     filename = path.basename(filepath)
     if filename.startswith('get'):
         return 'GET'
@@ -25,17 +56,20 @@ def get_httpmethod(filepath):
         return 'PATCH'
 
 
-def write_template(filepath, template):
-    with open(filepath, 'w') as f:
+def write_response(res_filepath:str, template:dict):
+    with open(res_filepath, 'w') as f:
         json.dump(template, f, indent=4)
 
+    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
+        res_filepath))
 
-def write_content(filepath, content):
+
+def write_content(filepath:str, content:dict):
     with open(filepath, 'w+b') as f:
         f.write(content)
 
 
-def generate_template(filepath):
+def generate_template(filepath:str):
     template = {
             'url':'',
             'httpMethod': get_httpmethod(filepath),
@@ -49,7 +83,7 @@ def generate_template(filepath):
     write_template(filepath, template)
 
 
-def get_payload(template):
+def get_payload(template:dict):
     if template['reqContentType'] == 'application/json':
         payload = json.dumps(template['reqPayload'])
 
@@ -61,11 +95,14 @@ def get_payload(template):
     return payload
 
 
-def get_reqheaders(template):
+def get_reqheaders(template:dict):
     req_headers=template['reqHeaders']
 
     if template['reqAuthType'] == 'bearer':
         req_headers['Authorization'] = 'Bearer ' + template['reqAuthToken']
+    elif template['reqAuthType'] == 'bearer_generate':
+        token_response = callrest(template['reqAuthToken'])
+        req_headers['Authorization'] = 'Bearer ' + token_response['resBody']['access_token']
     elif template['reqAuthType'] == 'basic':
         req_headers['Authorization'] = 'Basic ' + str(base64.b64encode(bytes(template['reqAuthToken'], 'utf-8')), 'utf-8')
 
@@ -75,7 +112,7 @@ def get_reqheaders(template):
     return req_headers
 
 
-def handle_binary_response(template, filepath, file_ext, content):
+def handle_binary_response(template:dict, filepath:str, file_ext:str, content):
     if template['resFile']:
         resfile = template['resFile']
     else:
@@ -113,7 +150,7 @@ def get_responsedata(res, template, filepath):
     return res_data
 
 
-def do_call(template, filepath):
+def do_call(template:dict, filepath:str):
     # Disabling warnings for unverified HTTPS requests
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
     urllib3.disable_warnings()
@@ -125,7 +162,7 @@ def do_call(template, filepath):
             verify=False)
 
 
-def callrest(filepath, curlify):
+def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     with open(filepath) as f:
         template = json.load(f)
 
@@ -138,43 +175,12 @@ def callrest(filepath, curlify):
 
     template = { **template, **res_data }
 
-    res_filepath = filepath[:-5] + '-res.json'
-
-    write_template(res_filepath, template)
-
-    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
-        res_filepath))
+    write_response(filepath[:-5] + '-res.json', template)
 
     if curlify:
         print(to_curl(res.request, verify=False))
 
-
-def usage():
-    return '''
-    restcall.py [-h] [-t] [-c] filepath
-
-    Generate a template:
-        restcall -t get-service-name.json
-        restcall -t post-service-name.json
-
-    Edit the template and populate the required values:
-        - url - the REST URL
-        - httpMethod - GET, POST, PUT, PATCH, DELETE
-        - reqAuthType - none, bearer
-        - reqAuthToken - the actual token if the reqAuthType is `bearer`
-        - reqContentType - the request content type. eg. `application/json`
-        - reqHeaders - the request headers
-        - reqPayload - the request body. If binary, provide the file path.
-        - resFile - the file path for storing binary response
-
-    Make the REST call:
-        restcall get-service-name.json
-
-    Output equivalent curl command:
-        restcall -c get-service-name.json
-
-    The response will be stored in get-service-name-res.json.
-    '''
+    return template
 
 
 def main():

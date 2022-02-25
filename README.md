@@ -30,9 +30,10 @@ Edit the template and populate the required values.
 Here are the parameters, their meaning and the allowed values:
 - url - the REST URL
 - httpMethod - GET, POST, PUT, PATCH, DELETE
-- reqAuthType - none, bearer, basic
+- reqAuthType - `none`, `bearer`, `bearer_generate`, `basic`
 - reqAuthToken
     - the actual token if the reqAuthType is `bearer`
+    - filepath to the restcall template to generate the token if the reqAuthType is `bearer_generate`
     - `username:password` if the reqAuthType is `basic`
 - reqContentType - the request content type. eg. `application/json`
 - reqHeaders - the request headers
