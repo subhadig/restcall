@@ -56,12 +56,9 @@ def get_httpmethod(filepath:str):
         return 'PATCH'
 
 
-def write_response(res_filepath:str, template:dict):
+def write_template(res_filepath:str, template:dict):
     with open(res_filepath, 'w') as f:
         json.dump(template, f, indent=4)
-
-    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
-        res_filepath))
 
 
 def write_content(filepath:str, content:dict):
@@ -174,8 +171,10 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     res_data = get_responsedata(res, template, filepath)
 
     template = { **template, **res_data }
-
-    write_response(filepath[:-5] + '-res.json', template)
+    res_filepath = filepath[:-5] + '-res.json'
+    write_template(res_filepath, template)
+    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
+        res_filepath))
 
     if curlify:
         print(to_curl(res.request, verify=False))
