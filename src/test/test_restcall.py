@@ -32,7 +32,7 @@ class TestRestcall(unittest.TestCase):
 
         with open(filepath, 'r') as f:
             actual = ''.join(f.readlines())
-        with open('test/fixtures/generate-expected-result.json', 'r') as f:
+        with open(os.path.dirname(__file__) + '/fixtures/generate-expected-result.json', 'r') as f:
             expected = ''.join(f.readlines())
 
         self.assertEqual(expected, actual)
