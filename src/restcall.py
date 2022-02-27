@@ -207,4 +207,4 @@ def main(argv: list):
             traceback.print_exc()
 
 if __name__=='__main__':
-    main(sys.argv)
+    main(sys.argv[1:])
