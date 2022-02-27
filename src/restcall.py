@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError
 import base64
 import urllib3
 from curlify import to_curl
+import sys
 
 
 def usage():
@@ -182,7 +183,7 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     return template
 
 
-def main():
+def main(argv: list):
     parser=argparse.ArgumentParser(description='Make restcalls!', usage=usage())
     parser.add_argument('filepath', help='Path to the restcall template')
     parser.add_argument('-t', '--template', action='store_true',
@@ -190,7 +191,7 @@ def main():
     parser.add_argument('-c', '--curlify', action='store_true',
             help='Generate curl command for the REST call')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     filepath = args.filepath
     if args.template:
         generate_template(filepath)
@@ -206,4 +207,4 @@ def main():
             traceback.print_exc()
 
 if __name__=='__main__':
-    main()
+    main(sys.argv)
