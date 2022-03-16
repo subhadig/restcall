@@ -1,5 +1,5 @@
 # restcall
-A small command line script to invoke REST APIs
+A small JSON-based command-line utility to make REST calls.
 
 ## Usage
 
