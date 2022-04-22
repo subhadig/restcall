@@ -131,8 +131,13 @@ def get_responsedata(res, template, filepath):
     if ';' in content_type:
         content_type = content_type[:content_type.index(';')]
 
-    if content_type == 'application/json':
-        res_data['resBody'] = res.json()
+    # application/x-www-form-urlencoded' is added to handle a server side bug
+    if content_type == 'application/json' or content_type == 'application/x-www-form-urlencoded':
+        # Don't try to convert to json if the response body is empty
+        if res.text:
+            res_data['resBody'] = res.json()
+        else:
+            res_data['resBody'] = res.text
 
     elif content_type == 'application/pdf':
         res_data['resBody'] = handle_binary_response(template,
@@ -164,7 +169,7 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     with open(filepath) as f:
         template = json.load(f)
 
-    if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH']:
+    if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
         res = do_call(template, filepath)
     else:
         raise NotImplementedError('HTTP method not supported')
