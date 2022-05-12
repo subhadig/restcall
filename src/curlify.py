@@ -21,6 +21,12 @@
 # SOFTWARE.
 
 from shlex import quote
+from typing import Final
+
+BLACKLISTED_HEADERS: Final = ['Content-Length', 'User-Agent']
+
+def is_header_allowed(header: tuple):
+    return header[0] not in BLACKLISTED_HEADERS
 
 
 def to_curl(request, compressed=False, verify=True):
@@ -37,7 +43,7 @@ def to_curl(request, compressed=False, verify=True):
         ('-X', request.method),
     ]
 
-    for k, v in sorted(request.headers.items()):
+    for k, v in sorted(filter(is_header_allowed, request.headers.items())):
         parts += [('-H', '{0}: {1}'.format(k, v))]
 
     if request.body:

@@ -1,0 +1,12 @@
+{
+  "url": "http://restcall.org/",
+  "httpMethod": "POST",
+  "reqAuthType": "none",
+  "reqAuthToken": "",
+  "reqContentType": "application/json",
+  "reqHeaders": {},
+  "reqPayload": {
+    "key": "value"
+  },
+  "resFile": ""
+}

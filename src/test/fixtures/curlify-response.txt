@@ -1,0 +1,9 @@
+curl  \
+ -X POST  \
+ -H 'Accept: */*'  \
+ -H 'Accept-Encoding: gzip, deflate'  \
+ -H 'Connection: keep-alive'  \
+ -H 'Content-Type: application/json'  \
+ -d '{"key": "value"}'  \
+ --insecure  \
+ http://restcall.org/

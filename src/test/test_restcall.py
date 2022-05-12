@@ -4,6 +4,7 @@ from importlib import import_module
 import unittest
 import pathlib
 import json
+import io
 
 import httpretty
 
@@ -55,8 +56,32 @@ class TestRestcall(unittest.TestCase):
         with open(response_filepath) as f:
             actual_response = json.load(f)
 
-        self.assertEquals(200, actual_response["resStatus"])
-        self.assertEquals(response_body, json.dumps(actual_response["resBody"]))
+        self.assertEqual(200, actual_response["resStatus"])
+        self.assertEqual(response_body, json.dumps(actual_response["resBody"]))
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_curlify(self):
+        response_body = '{"description": "A small command line script to invoke REST APIs"}'
+
+        httpretty.register_uri(httpretty.POST, "http://restcall.org/",
+                           body=response_body,
+                           adding_headers={},
+                           content_type="application/json")
+
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+
+        restcall.main(['-c', os.path.dirname(__file__) + '/fixtures/post-simple-rest.json'])
+
+        sys.stdout = sys.__stdout__
+
+        response_filepath = os.path.dirname(__file__) + '/fixtures/post-simple-rest-res.json'
+        self.files_to_remove.append(response_filepath)
+
+        expected_output_filepath = os.path.dirname(__file__) + '/fixtures/curlify-response.txt'
+        with open(expected_output_filepath) as f:
+            actual = "\n".join(capturedOutput.getvalue().split("\n")[1:])
+            self.assertEqual(f.read(), actual)
 
     def tearDown(self):
         for f in self.files_to_remove:
