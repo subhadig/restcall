@@ -93,7 +93,7 @@ def get_payload(template:dict):
     return payload
 
 
-def get_reqheaders(template:dict):
+def get_reqheaders(template:dict) -> dict:
     req_headers=template['reqHeaders']
 
     if template['reqAuthType'] == 'bearer':
@@ -120,7 +120,7 @@ def handle_binary_response(template:dict, filepath:str, file_ext:str, content):
     return "Binary response has been written to " + resfile
 
 
-def get_responsedata(res, template, filepath):
+def get_responsedata(res, template, filepath) -> dict:
     res_data = {
             'resStatus': res.status_code,
             'resHeaders': dict(res.headers),
@@ -153,7 +153,7 @@ def get_responsedata(res, template, filepath):
     return res_data
 
 
-def do_call(template:dict, filepath:str):
+def do_call(template:dict, filepath:str) -> requests.Response:
     # Disabling warnings for unverified HTTPS requests
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
     urllib3.disable_warnings()
