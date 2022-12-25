@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-import argparse
 import json
 from os import path
 import requests
@@ -8,8 +5,7 @@ import traceback
 from requests.exceptions import ConnectionError
 import base64
 import urllib3
-from curlify import to_curl
-import sys
+from restcall.curlify import to_curl
 
 
 def usage():
@@ -187,30 +183,3 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
         print(to_curl(res.request, verify=False))
 
     return template
-
-
-def main(argv: list):
-    parser=argparse.ArgumentParser(description='Make restcalls!', usage=usage())
-    parser.add_argument('filepath', help='Path to the restcall template')
-    parser.add_argument('-t', '--template', action='store_true',
-            help='Generate restcall template')
-    parser.add_argument('-c', '--curlify', action='store_true',
-            help='Generate curl command for the REST call')
-
-    args = parser.parse_args(argv)
-    filepath = args.filepath
-    if args.template:
-        generate_template(filepath)
-    else:
-        try:
-            callrest(filepath, args.curlify)
-        except KeyboardInterrupt:
-            print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
-        except ConnectionError as ce:
-            print("\nWARN: Restcall failed due to ConnectionError:" + str(ce))
-        except Exception as e:
-            print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
-            traceback.print_exc()
-
-if __name__=='__main__':
-    main(sys.argv[1:])
