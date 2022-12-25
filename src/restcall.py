@@ -124,6 +124,7 @@ def get_responsedata(res, template, filepath) -> dict:
     res_data = {
             'resStatus': res.status_code,
             'resHeaders': dict(res.headers),
+            'resSize': f'{len(res.content)/1024:.3f}K'
             }
 
     content_type = res.headers['Content-Type'] if 'Content-Type' in res.headers else ""
@@ -179,8 +180,8 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     template = { **template, **res_data }
     res_filepath = filepath[:-5] + '-res.json'
     write_template(res_filepath, template)
-    print('Response status: {}. Output stored in {}'.format(template['resStatus'],
-        res_filepath))
+    print('Response status: {}, size: {}. Output stored in {}'.format(template['resStatus'],
+        template['resSize'], res_filepath))
 
     if curlify:
         print(to_curl(res.request, verify=False))
