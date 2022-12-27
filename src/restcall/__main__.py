@@ -2,7 +2,7 @@ from restcall import restcall
 import sys
 import argparse
 
-def main(argv: list):
+def _main(argv: list):
     parser=argparse.ArgumentParser(description='Make restcalls!', usage=restcall.usage())
     parser.add_argument('filepath', help='Path to the restcall template')
     parser.add_argument('-t', '--template', action='store_true',
@@ -25,5 +25,8 @@ def main(argv: list):
             print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
             traceback.print_exc()
 
+def main():
+    _main(sys.argv[1:])
+
 if __name__=='__main__':
-    main(sys.argv[1:])
+    main()

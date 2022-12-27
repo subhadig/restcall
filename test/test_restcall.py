@@ -18,7 +18,7 @@ SRC_ROOT = os.path.abspath(
         )
 sys.path.append(SRC_ROOT)
 
-from restcall.__main__ import main
+from restcall.__main__ import _main as main
 
 class TestRestcall(unittest.TestCase):
 
