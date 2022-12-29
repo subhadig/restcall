@@ -1,6 +1,12 @@
 # restcall
 A small JSON-based command-line utility to make REST calls.
 
+## Installation
+`restcall` is distributed as a Python package and can be installed using `pip`.
+```
+python -m pip install restcall
+```
+
 ## Usage
 
 ### Generate a template
