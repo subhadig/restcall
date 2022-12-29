@@ -1,5 +1,6 @@
 # MIT License
 # 
+# Copyright (c) 2022 Subhadip Ghosh
 # Copyright (c) 2016 Egor
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
