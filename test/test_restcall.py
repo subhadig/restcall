@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from importlib import import_module
 import unittest
 import pathlib
 import json
@@ -10,15 +9,16 @@ import httpretty
 
 import sys
 import os
-PROJECT_ROOT = os.path.abspath(
+SRC_ROOT = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            os.pardir
+            os.pardir,
+            'src'
             )
         )
-sys.path.append(PROJECT_ROOT)
+sys.path.append(SRC_ROOT)
 
-import restcall
+from restcall.__main__ import _main as main
 
 class TestRestcall(unittest.TestCase):
 
@@ -29,7 +29,7 @@ class TestRestcall(unittest.TestCase):
         filepath = '/tmp/get-test-generate-template.json'
         self.files_to_remove.append(filepath)
 
-        restcall.main(['-t', filepath])
+        main(['-t', filepath])
 
         self.assertTrue(pathlib.Path(filepath).is_file())
 
@@ -47,7 +47,7 @@ class TestRestcall(unittest.TestCase):
                            body=response_body,
                            content_type="application/json")
 
-        restcall.main([os.path.dirname(__file__) + '/fixtures/get-simple-rest.json'])
+        main([os.path.dirname(__file__) + '/fixtures/get-simple-rest.json'])
 
 
         response_filepath = os.path.dirname(__file__) + '/fixtures/get-simple-rest-res.json'
@@ -71,7 +71,7 @@ class TestRestcall(unittest.TestCase):
         capturedOutput = io.StringIO()
         sys.stdout = capturedOutput
 
-        restcall.main(['-c', os.path.dirname(__file__) + '/fixtures/post-simple-rest.json'])
+        main(['-c', os.path.dirname(__file__) + '/fixtures/post-simple-rest.json'])
 
         sys.stdout = sys.__stdout__
 

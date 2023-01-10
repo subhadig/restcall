@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "restcall"
+version = "1.0.0"
+description = "A small JSON-based command-line utility to make REST calls"
+readme = "README.md"
+authors = [{ name = "Subhadip Ghosh", email = "subhadip.sky@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["rest", "client", "cli"]
+dependencies = [
+    "requests",
+    "urllib3"
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://github.com/subhadig/restcall"
+
+[project.scripts]
+restcall = "restcall.__main__:main"

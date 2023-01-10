@@ -1,6 +1,24 @@
-#!/usr/bin/env python3
-
-import argparse
+# MIT License
+# 
+# Copyright © 2022 Subhadip Ghosh
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the “Software”), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 import json
 from os import path
 import requests
@@ -8,8 +26,7 @@ import traceback
 from requests.exceptions import ConnectionError
 import base64
 import urllib3
-from curlify import to_curl
-import sys
+from restcall.curlify import to_curl
 
 
 def usage():
@@ -187,30 +204,3 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
         print(to_curl(res.request, verify=False))
 
     return template
-
-
-def main(argv: list):
-    parser=argparse.ArgumentParser(description='Make restcalls!', usage=usage())
-    parser.add_argument('filepath', help='Path to the restcall template')
-    parser.add_argument('-t', '--template', action='store_true',
-            help='Generate restcall template')
-    parser.add_argument('-c', '--curlify', action='store_true',
-            help='Generate curl command for the REST call')
-
-    args = parser.parse_args(argv)
-    filepath = args.filepath
-    if args.template:
-        generate_template(filepath)
-    else:
-        try:
-            callrest(filepath, args.curlify)
-        except KeyboardInterrupt:
-            print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
-        except ConnectionError as ce:
-            print("\nWARN: Restcall failed due to ConnectionError:" + str(ce))
-        except Exception as e:
-            print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
-            traceback.print_exc()
-
-if __name__=='__main__':
-    main(sys.argv[1:])
