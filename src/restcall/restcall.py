@@ -27,6 +27,7 @@ from requests.exceptions import ConnectionError
 import base64
 import urllib3
 from restcall.curlify import to_curl
+from uncurl import api
 
 
 def usage():
@@ -96,6 +97,25 @@ def generate_template(filepath:str):
             'resFile': "",
             }
     write_template(filepath, template)
+
+
+def uncurlify(inputfilepath:str, outputfilepath:str):
+    with open(inputfilepath) as f:
+        curl_command = f.read()
+        curl_command = curl_command.replace('--location', '')
+        curl_command = curl_command.replace('--request', '-X')
+    parse_context = api.parse_context(curl_command)
+    template = {
+            'url':parse_context.url,
+            'httpMethod': parse_context.method.upper(),
+            'reqAuthType': 'none',
+            'reqAuthToken': '',
+            'reqContentType': '',
+            'reqHeaders': parse_context.headers,
+            'reqPayload': json.loads(parse_context.data) if parse_context.data else "",
+            'resFile': "",
+            }
+    write_template(outputfilepath, template)
 
 
 def get_payload(template:dict):

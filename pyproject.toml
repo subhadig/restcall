@@ -17,7 +17,8 @@ classifiers = [
 keywords = ["rest", "client", "cli"]
 dependencies = [
     "requests",
-    "urllib3"
+    "urllib3",
+    "uncurl"
 ]
 requires-python = ">=3.9"
 
