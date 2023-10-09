@@ -24,23 +24,22 @@ import sys
 import argparse
 
 def _main(argv: list):
-    parser=argparse.ArgumentParser(description='Make restcalls!', usage=restcall.usage())
+    parser=argparse.ArgumentParser(description='Make restcalls!',
+                                   usage=restcall.usage())
     parser.add_argument('filepath', help='Path to the restcall template')
-    parser.add_argument('curl_filepath', help='Path to the curl command file')
     parser.add_argument('-t', '--template', action='store_true',
             help='Generate restcall template')
     parser.add_argument('-c', '--curlify', action='store_true',
             help='Generate curl command for the REST call')
-    parser.add_argument('-u', '--uncurlify', action='store_true',
-            help='Generate restcall template from a curl command')
+    parser.add_argument('-u', '--uncurlify', type=str,
+                        help='Generate restcall template from a curl command. Pass the file path containing the curl command.')
 
     args = parser.parse_args(argv)
     filepath = args.filepath
-    curl_filepath = args.curl_filepath
     if args.template:
         restcall.generate_template(filepath)
     elif args.uncurlify:
-        restcall.uncurlify(curl_filepath, filepath)
+        restcall.uncurlify(args.uncurlify, filepath)
     else:
         try:
             restcall.callrest(filepath, args.curlify)

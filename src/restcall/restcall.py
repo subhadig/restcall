@@ -172,9 +172,10 @@ def get_responsedata(res, template, filepath) -> dict:
     # application/x-www-form-urlencoded' is added to handle a server side bug
     if content_type == 'application/json' or content_type == 'application/x-www-form-urlencoded':
         # Don't try to convert to json if the response body is empty
-        if res.text:
+        try:
             res_data['resBody'] = res.json()
-        else:
+        except Exception as e:
+            print("\nWARN: error while converting response to JSON. Using as test.")
             res_data['resBody'] = res.text
 
     elif content_type == 'application/pdf':
