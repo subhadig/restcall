@@ -47,11 +47,14 @@ def _main(argv: list):
             restcall.callrest(filepath, args.curlify)
         except KeyboardInterrupt:
             print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
+            sys.exit(1)
         except ConnectionError as ce:
             print("\nWARN: Restcall failed due to ConnectionError:" + str(ce))
+            sys.exit(1)
         except Exception as e:
             print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
             traceback.print_exc()
+            sys.exit(1)
 
 def main():
     _main(sys.argv[1:])
