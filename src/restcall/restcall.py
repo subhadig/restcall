@@ -22,8 +22,6 @@
 import json
 from os import path
 import requests
-import traceback
-from requests.exceptions import ConnectionError
 import base64
 import urllib3
 from restcall.curlify import to_curl

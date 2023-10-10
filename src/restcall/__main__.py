@@ -22,6 +22,8 @@
 from restcall import restcall
 import sys
 import argparse
+import traceback
+from requests.exceptions import ConnectionError
 
 def _main(argv: list):
     parser=argparse.ArgumentParser(description='Make restcalls!',
