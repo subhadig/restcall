@@ -108,7 +108,7 @@ def uncurlify(inputfilepath:str, outputfilepath:str):
             'httpMethod': parse_context.method.upper(),
             'reqAuthType': 'none',
             'reqAuthToken': '',
-            'reqContentType': '',
+            'reqContentType': parse_context.headers.pop('Content-Type',''),
             'reqHeaders': parse_context.headers,
             'reqPayload': json.loads(parse_context.data) if parse_context.data else "",
             'resFile': "",

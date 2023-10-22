@@ -83,6 +83,23 @@ class TestRestcall(unittest.TestCase):
             actual = "\n".join(capturedOutput.getvalue().split("\n")[1:])
             self.assertEqual(f.read(), actual)
 
+    def test_uncurlify_get(self):
+        filepath = '/tmp/test-uncurlify-get.json'
+        self.files_to_remove.append(filepath)
+
+        main(['-u',
+            os.path.dirname(__file__) + '/fixtures/curl-get.txt',
+            filepath])
+
+        self.assertTrue(pathlib.Path(filepath).is_file())
+
+        with open(filepath, 'r') as f:
+            actual = ''.join(f.readlines())
+        with open(os.path.dirname(__file__) + '/fixtures/get-curl-expected.json', 'r') as f:
+            expected = ''.join(f.readlines())
+
+        self.assertEqual(expected, actual)
+
     def tearDown(self):
         for f in self.files_to_remove:
             if os.path.exists(f):
