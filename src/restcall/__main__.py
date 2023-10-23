@@ -33,15 +33,15 @@ def _main(argv: list):
             help='Generate restcall template')
     parser.add_argument('-c', '--curlify', action='store_true',
             help='Generate curl command for the REST call')
-    parser.add_argument('-u', '--uncurlify', type=str,
+    parser.add_argument('-u', '--uncurlify', type=str, dest='curl_command_filepath',
                         help='Generate restcall template from a curl command. Pass the file path containing the curl command.')
 
     args = parser.parse_args(argv)
     filepath = args.filepath
     if args.template:
         restcall.generate_template(filepath)
-    elif args.uncurlify:
-        restcall.uncurlify(args.uncurlify, filepath)
+    elif args.curl_command_filepath:
+        restcall.uncurlify(args.curl_command_filepath, filepath)
     else:
         try:
             restcall.callrest(filepath, args.curlify)
