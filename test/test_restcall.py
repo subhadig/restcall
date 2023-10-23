@@ -24,6 +24,7 @@ class TestRestcall(unittest.TestCase):
 
     def setUp(self):
         self.files_to_remove = []
+        self.maxDiff = None
 
     def test_generate_template(self):
         filepath = '/tmp/get-test-generate-template.json'
@@ -83,19 +84,19 @@ class TestRestcall(unittest.TestCase):
             actual = "\n".join(capturedOutput.getvalue().split("\n")[1:])
             self.assertEqual(f.read(), actual)
 
-    def test_uncurlify_get(self):
-        filepath = '/tmp/test-uncurlify-get.json'
+    def test_uncurlify(self):
+        filepath = '/tmp/post-test-uncurlify.json'
         self.files_to_remove.append(filepath)
 
         main(['-u',
-            os.path.dirname(__file__) + '/fixtures/curl-get.txt',
+            os.path.dirname(__file__) + '/fixtures/curl-post.txt',
             filepath])
 
         self.assertTrue(pathlib.Path(filepath).is_file())
 
         with open(filepath, 'r') as f:
             actual = ''.join(f.readlines())
-        with open(os.path.dirname(__file__) + '/fixtures/get-curl-expected.json', 'r') as f:
+        with open(os.path.dirname(__file__) + '/fixtures/post-curl-expected.json', 'r') as f:
             expected = ''.join(f.readlines())
 
         self.assertEqual(expected, actual)

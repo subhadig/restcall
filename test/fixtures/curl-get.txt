@@ -1,1 +1,0 @@
-curl -XGET -H "Content-Type: application/json" 'http://restcall.org/'
