@@ -112,12 +112,12 @@ def generate_template(filepath:str,
 
 def uncurlify(inputfilepath:str, outputfilepath:str):
     with open(inputfilepath) as f:
-        curl_command = f.read()
+        curl_command = ''.join(map(lambda l: l.removesuffix(" \\\n"),f.readlines()))
         curl_command = curl_command.replace('--location', '')
         curl_command = curl_command.replace('--request', '-X')
+    
     parse_context = api.parse_context(curl_command)
     authType, authToken = _extract_authorization(parse_context.headers)
-
     generate_template(outputfilepath,
             parse_context.url,
             parse_context.method.upper(),
