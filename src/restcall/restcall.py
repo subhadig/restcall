@@ -201,7 +201,7 @@ def _get_responsedata(res, template, filepath) -> dict:
         try:
             res_data['resBody'] = res.json()
         except Exception as e:
-            print("\nWARN: error while converting response to JSON. Using as test.")
+            print("\nWARN: error while converting response to JSON. Using as text.")
             res_data['resBody'] = res.text
 
     elif content_type == 'application/pdf':
