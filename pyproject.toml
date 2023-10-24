@@ -24,6 +24,7 @@ requires-python = ">=3.9"
 
 [project.urls]
 Homepage = "https://github.com/subhadig/restcall"
+Changelog = "https://github.com/subhadig/restcall/blob/master/CHANGELOG.md"
 
 [project.scripts]
 restcall = "restcall.__main__:main"
