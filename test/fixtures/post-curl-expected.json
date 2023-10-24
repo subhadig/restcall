@@ -1,0 +1,14 @@
+{
+    "url": "http://restcall.org/",
+    "httpMethod": "POST",
+    "reqAuthType": "bearer",
+    "reqAuthToken": "dGVzdC10b2tlbgo=",
+    "reqContentType": "application/json",
+    "reqHeaders": {
+        "If-Match": "bfc13a64729c4290ef5b2c2730249c88ca92d82d"
+    },
+    "reqPayload": {
+        "description": "A small command line script to invoke REST APIs"
+    },
+    "resFile": ""
+}

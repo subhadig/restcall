@@ -1,12 +1,16 @@
 {
-  "url": "http://restcall.org/",
-  "httpMethod": "POST",
-  "reqAuthType": "none",
-  "reqAuthToken": "",
-  "reqContentType": "application/json",
-  "reqHeaders": {},
-  "reqPayload": {
-    "key": "value"
-  },
-  "resFile": ""
+    "url": "http://restcall.org/",
+    "httpMethod": "POST",
+    "reqAuthType": "none",
+    "reqAuthToken": "",
+    "reqContentType": "application/json",
+    "reqHeaders": {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive"
+    },
+    "reqPayload": {
+        "key": "value"
+    },
+    "resFile": ""
 }

@@ -24,6 +24,7 @@ class TestRestcall(unittest.TestCase):
 
     def setUp(self):
         self.files_to_remove = []
+        self.maxDiff = None
 
     def test_generate_template(self):
         filepath = '/tmp/get-test-generate-template.json'
@@ -82,6 +83,64 @@ class TestRestcall(unittest.TestCase):
         with open(expected_output_filepath) as f:
             actual = "\n".join(capturedOutput.getvalue().split("\n")[1:])
             self.assertEqual(f.read(), actual)
+
+    def test_uncurlify(self):
+        filepath = '/tmp/post-test-uncurlify.json'
+        self.files_to_remove.append(filepath)
+
+        main(['-u',
+            os.path.dirname(__file__) + '/fixtures/curl-post.txt',
+            filepath])
+
+        self.assertTrue(pathlib.Path(filepath).is_file())
+
+        with open(filepath, 'r') as f:
+            actual = ''.join(f.readlines())
+        with open(os.path.dirname(__file__) + '/fixtures/post-curl-expected.json', 'r') as f:
+            expected = ''.join(f.readlines())
+
+        self.assertEqual(expected, actual)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_curlify_uncurlify(self):
+        response_body = '{"description": "A small command line script to invoke REST APIs"}'
+
+        httpretty.register_uri(httpretty.POST, "http://restcall.org/",
+                           body=response_body,
+                           adding_headers={},
+                           content_type="application/json")
+
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+
+        original_template_path = os.path.dirname(__file__) + '/fixtures/post-simple-rest.json'
+        main(['-c', original_template_path])
+
+        sys.stdout = sys.__stdout__
+
+        response_filepath = os.path.dirname(__file__) + '/fixtures/post-simple-rest-res.json'
+        self.files_to_remove.append(response_filepath)
+
+        generated_template_path = '/tmp/post-test-curlify-uncurlify.json'
+        self.files_to_remove.append(generated_template_path)
+
+        curl_command_filepath = '/tmp/test-curlify-uncurlify-command.txt'
+        with open(curl_command_filepath, 'w') as f:
+            printed_command = "\n".join(capturedOutput.getvalue().split("\n")[1:])
+            f.write(printed_command)
+
+        main(['-u',
+            curl_command_filepath,
+            generated_template_path])
+
+        self.assertTrue(pathlib.Path(generated_template_path).is_file())
+
+        with open(generated_template_path, 'r') as f:
+            actual = ''.join(f.readlines())
+        with open(original_template_path, 'r') as f:
+            expected = ''.join(f.readlines())
+
+        self.assertEqual(expected, actual)
 
     def tearDown(self):
         for f in self.files_to_remove:

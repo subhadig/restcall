@@ -22,29 +22,39 @@
 from restcall import restcall
 import sys
 import argparse
+import traceback
+from requests.exceptions import ConnectionError
 
 def _main(argv: list):
-    parser=argparse.ArgumentParser(description='Make restcalls!', usage=restcall.usage())
+    parser=argparse.ArgumentParser(description='Make restcalls!',
+                                   usage=restcall.usage())
     parser.add_argument('filepath', help='Path to the restcall template')
     parser.add_argument('-t', '--template', action='store_true',
             help='Generate restcall template')
     parser.add_argument('-c', '--curlify', action='store_true',
             help='Generate curl command for the REST call')
+    parser.add_argument('-u', '--uncurlify', type=str, dest='curl_command_filepath',
+                        help='Generate restcall template from a curl command. Pass the file path containing the curl command.')
 
     args = parser.parse_args(argv)
     filepath = args.filepath
     if args.template:
         restcall.generate_template(filepath)
+    elif args.curl_command_filepath:
+        restcall.uncurlify(args.curl_command_filepath, filepath)
     else:
         try:
             restcall.callrest(filepath, args.curlify)
         except KeyboardInterrupt:
             print("\nWARN: KeyboardInterrupt caught. Exiting restcall.")
+            sys.exit(1)
         except ConnectionError as ce:
             print("\nWARN: Restcall failed due to ConnectionError:" + str(ce))
+            sys.exit(1)
         except Exception as e:
             print("\nERROR: Restcall failed due to unknown errors. Here are the error details.")
             traceback.print_exc()
+            sys.exit(1)
 
 def main():
     _main(sys.argv[1:])

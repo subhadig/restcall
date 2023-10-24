@@ -16,6 +16,12 @@ restcall -t get-service-name.json
 restcall -t post-service-name.json
 ```
 
+### Import template from curl command
+```
+restcall -u curl-command.txt get-service-name.json
+```
+The `curl-command.txt` file contains the curl command.
+
 ### Modify the generated template
 
 The generated template looks like this:
@@ -47,12 +53,16 @@ Here are the parameters, their meaning and the allowed values:
 - resFile - the file path for storing binary response
 
 ### Make the REST call
-
 ```
 restcall get-service-name.json
 ```
 
 It will generate the response file `get-service-name-res.json`.
+
+### Output equivalent curl command:
+```
+restcall -c get-service-name.json
+```
 
 ## SSL
 By default SSL certificate verification is disabled.
