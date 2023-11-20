@@ -180,7 +180,7 @@ def _handle_binary_response(template:dict, filepath:str, file_ext:str, content):
         resfile = filepath[:-5] + file_ext
         template['resFile'] = resfile
     _write_content(resfile, content)
-    return "Binary response has been written to " + resfile
+    return "Response has been saved to " + resfile
 
 
 def _get_responsedata(res, template, filepath) -> dict:
@@ -202,6 +202,14 @@ def _get_responsedata(res, template, filepath) -> dict:
             res_data['resBody'] = res.json()
         except Exception as e:
             print("\nWARN: error while converting response to JSON. Using as text.")
+            res_data['resBody'] = res.text
+
+    elif content_type == 'text/plain':
+        # If the response file has been provided in the template
+        if template['resFile']:
+            res_data['resBody'] = _handle_binary_response(template, filepath,
+                                                          '.txt', res.content)
+        else:
             res_data['resBody'] = res.text
 
     elif content_type == 'application/pdf':
