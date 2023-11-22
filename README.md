@@ -50,7 +50,7 @@ Here are the parameters, their meaning and the allowed values:
 - reqContentType - the request content type. eg. `application/json`
 - reqHeaders - the request headers
 - reqPayload - the request body. If binary, provide the file path.
-- resFile - the file path for storing binary response
+- resFile - the file path for storing response externally
 
 ### Make the REST call
 ```

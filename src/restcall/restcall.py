@@ -52,7 +52,7 @@ def usage():
         - reqContentType - the request content type. eg. `application/json`
         - reqHeaders - the request headers
         - reqPayload - the request body. If binary, provide the file path.
-        - resFile - the file path for storing binary response
+        - resFile - the file path for storing response externally
 
     Make the REST call:
         restcall get-service-name.json
@@ -173,7 +173,7 @@ def _get_reqheaders(template:dict) -> dict:
     return req_headers
 
 
-def _handle_binary_response(template:dict, filepath:str, file_ext:str, content):
+def _handle_external_response_file(template:dict, filepath:str, file_ext:str, content):
     if template['resFile']:
         resfile = template['resFile']
     else:
@@ -192,12 +192,20 @@ def _get_responsedata(res, template, filepath) -> dict:
 
     content_type = res.headers['Content-Type'] if 'Content-Type' in res.headers else ""
 
+    # Remove if thre is any ; character present in the response content type
     if ';' in content_type:
         content_type = content_type[:content_type.index(';')]
 
-    # application/x-www-form-urlencoded' is added to handle a server side bug
-    if content_type == 'application/json' or content_type == 'application/x-www-form-urlencoded':
-        # Don't try to convert to json if the response body is empty
+    # If the response file has been provided in the template always store it in
+    # the file
+    if template['resFile']:
+        res_data['resBody'] = _handle_external_response_file(template,
+                filepath, '', res.content)
+
+    # Otherwise try to intelligently handle different types of responses
+    # Note: application/x-www-form-urlencoded' is added below to handle a
+    # server side bug
+    elif content_type == 'application/json' or content_type == 'application/x-www-form-urlencoded':
         try:
             res_data['resBody'] = res.json()
         except Exception as e:
@@ -205,22 +213,17 @@ def _get_responsedata(res, template, filepath) -> dict:
             res_data['resBody'] = res.text
 
     elif content_type == 'text/plain':
-        # If the response file has been provided in the template
-        if template['resFile']:
-            res_data['resBody'] = _handle_binary_response(template, filepath,
-                                                          '.txt', res.content)
-        else:
-            res_data['resBody'] = res.text
+        res_data['resBody'] = res.text
 
     elif content_type == 'application/pdf':
-        res_data['resBody'] = _handle_binary_response(template,
+        res_data['resBody'] = _handle_external_response_file(template,
                 filepath, '.pdf', res.content)
 
     elif content_type == 'application/zip':
-        res_data['resBody'] = _handle_binary_response(template,
+        res_data['resBody'] = _handle_external_response_file(template,
                 filepath, '.zip', res.content)
-
-    else:
+    
+    else: # Default handling
         res_data['resBody'] = res.text
 
     return res_data
