@@ -145,15 +145,22 @@ def _extract_authorization(headers: dict) -> tuple:
 
 
 def _get_payload(template:dict):
+    data = None
+    file = None
     if template['reqContentType'] == 'application/json':
-        payload = json.dumps(template['reqPayload'])
+        data = json.dumps(template['reqPayload'])
 
     elif template['reqContentType'] == 'application/zip':
-        payload = open(template['reqPayload'], 'rb')
+        data = open(template['reqPayload'], 'rb')
+
+    elif template['reqContentType'] == 'multipart/form-data':
+        file = {'file': open(template['reqPayload'], 'rb')}
+        # Content-type is set by request
+        del template['reqContentType']
 
     else:
-        payload = template['reqPayload']
-    return payload
+        data = template['reqPayload']
+    return (data, file)
 
 
 def _get_reqheaders(template:dict) -> dict:
@@ -167,7 +174,7 @@ def _get_reqheaders(template:dict) -> dict:
     elif template['reqAuthType'] == 'basic':
         req_headers['Authorization'] = 'Basic ' + str(base64.b64encode(bytes(template['reqAuthToken'], 'utf-8')), 'utf-8')
 
-    if template['reqContentType']:
+    if 'reqContentType' in template:
         req_headers['Content-Type'] = template['reqContentType']
 
     return req_headers
@@ -234,10 +241,13 @@ def _do_call(template:dict, filepath:str) -> requests.Response:
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
     urllib3.disable_warnings()
 
+    data, file = _get_payload(template)
+
     return requests.request(template['httpMethod'],
             template['url'],
             headers=_get_reqheaders(template),
-            data=_get_payload(template),
+            data=data,
+            files=file,
             verify=False)
 
 
