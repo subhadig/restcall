@@ -26,11 +26,13 @@ import base64
 import urllib3
 from restcall.curlify import to_curl
 from uncurl import api
+import importlib.metadata
+import io
 
 
 def usage():
     return '''
-    restcall.py [-h] [-t] [-c] filepath
+    restcall.py [-t] [-c] [-u] filepath
 
     Generate a template:
         restcall -t get-service-name.json
@@ -62,6 +64,9 @@ def usage():
     Output equivalent curl command:
         restcall -c get-service-name.json
     '''
+
+def print_version():
+    return importlib.metadata.version('restcall')
 
 
 def _get_httpmethod(filepath:str):
@@ -146,7 +151,7 @@ def _extract_authorization(headers: dict) -> tuple:
 
 def _get_payload(template:dict):
     data = None
-    file = None
+    files = None
     if template['reqContentType'] == 'application/json':
         data = json.dumps(template['reqPayload'])
 
@@ -154,13 +159,13 @@ def _get_payload(template:dict):
         data = open(template['reqPayload'], 'rb')
 
     elif template['reqContentType'] == 'multipart/form-data':
-        file = {'file': open(template['reqPayload'], 'rb')}
+        files = {'file': open(template['reqPayload'], 'rb')}
         # Content-type is set by request
         del template['reqContentType']
 
     else:
         data = template['reqPayload']
-    return (data, file)
+    return (data, files)
 
 
 def _get_reqheaders(template:dict) -> dict:
@@ -241,14 +246,24 @@ def _do_call(template:dict, filepath:str) -> requests.Response:
     # https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
     urllib3.disable_warnings()
 
-    data, file = _get_payload(template)
+    data, files = _get_payload(template)
 
-    return requests.request(template['httpMethod'],
+    response = requests.request(template['httpMethod'],
             template['url'],
             headers=_get_reqheaders(template),
             data=data,
-            files=file,
+            files=files,
             verify=False)
+
+    # Close the open files
+    if isinstance(data, io.IOBase):
+        data.close()
+    if files:
+        for f in files.values():
+            f.close()
+
+    return response
+
 
 
 def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:

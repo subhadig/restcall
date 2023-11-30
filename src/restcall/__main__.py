@@ -28,13 +28,14 @@ from requests.exceptions import ConnectionError
 def _main(argv: list):
     parser=argparse.ArgumentParser(description='Make restcalls!',
                                    usage=restcall.usage())
-    parser.add_argument('filepath', help='Path to the restcall template')
+    parser.add_argument('filepath', help='path to the restcall template')
+    parser.add_argument('-v', '--version', action='version', version=restcall.print_version())
     parser.add_argument('-t', '--template', action='store_true',
-            help='Generate restcall template')
+            help='generate restcall template')
     parser.add_argument('-c', '--curlify', action='store_true',
-            help='Generate curl command for the REST call')
+            help='generate curl command for the REST call')
     parser.add_argument('-u', '--uncurlify', type=str, dest='curl_command_filepath',
-                        help='Generate restcall template from a curl command. Pass the file path containing the curl command.')
+                        help='generate restcall template from a curl command. Pass the file path containing the curl command.')
 
     args = parser.parse_args(argv)
     filepath = args.filepath

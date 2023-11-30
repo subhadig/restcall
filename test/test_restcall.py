@@ -87,7 +87,8 @@ class TestRestcall(unittest.TestCase):
         self.assertTrue(pathlib.Path(external_response_filepath).is_file())
         with open(external_response_filepath) as f:
             external_response = f.read()
-        print(external_response)
+        self.assertEqual('{"description": "A small command line script to invoke REST APIs"}',
+                external_response)
 
     @httpretty.activate(allow_net_connect=False)
     def test_multipart_file_upload(self):
