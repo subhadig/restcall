@@ -6,6 +6,8 @@ import json
 import io
 
 import httpretty
+from typing import Tuple
+from httpretty.core import HTTPrettyRequest
 
 import sys
 import os
@@ -59,6 +61,59 @@ class TestRestcall(unittest.TestCase):
 
         self.assertEqual(200, actual_response["resStatus"])
         self.assertEqual(response_body, json.dumps(actual_response["resBody"]))
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_external_file(self):
+        response_body = '{"description": "A small command line script to invoke REST APIs"}'
+        httpretty.register_uri(httpretty.GET, "http://restcall.org/",
+                           body=response_body,
+                           content_type="application/json")
+
+        main([os.path.dirname(__file__) + '/fixtures/get-simple-rest-external-file.json'])
+
+
+        response_filepath = os.path.dirname(__file__) + '/fixtures/get-simple-rest-external-file-res.json'
+        self.files_to_remove.append(response_filepath)
+        self.assertTrue(pathlib.Path(response_filepath).is_file())
+        with open(response_filepath) as f:
+            actual_response = json.load(f)
+
+        self.assertEqual(200, actual_response["resStatus"])
+        self.assertEqual("Response has been saved to test/fixtures/external-response-file.json",
+                actual_response["resBody"])
+
+        external_response_filepath = os.path.dirname(__file__) + '/fixtures/external-response-file.json'
+        self.files_to_remove.append(external_response_filepath)
+        self.assertTrue(pathlib.Path(external_response_filepath).is_file())
+        with open(external_response_filepath) as f:
+            external_response = f.read()
+        print(external_response)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_multipart_file_upload(self):
+        def httpretty_callback(request: HTTPrettyRequest,
+                url: str,
+                headers: dict
+                ) -> Tuple[int, dict, str]:
+            self.assertTrue(request.headers['Content-Type'].startswith('multipart/form-data; boundary='))
+            self.assertIsNotNone(request.body)
+            return (200, {}, '')
+
+        httpretty.register_uri(httpretty.POST, "http://restcall.org/multipart",
+                           body=httpretty_callback,
+                           content_type="multipart/form-data")
+
+        main([os.path.dirname(__file__) + '/fixtures/post-multipart-file.json'])
+
+
+        response_filepath = os.path.dirname(__file__) + '/fixtures/post-multipart-file-res.json'
+        self.files_to_remove.append(response_filepath)
+        self.assertTrue(pathlib.Path(response_filepath).is_file())
+        with open(response_filepath) as f:
+            actual_response = json.load(f)
+
+        self.assertEqual(200, actual_response["resStatus"])
+        self.assertEqual('', actual_response["resBody"])
 
     @httpretty.activate(allow_net_connect=False)
     def test_curlify(self):

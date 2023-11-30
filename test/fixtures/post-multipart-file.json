@@ -1,0 +1,10 @@
+{
+    "url": "http://restcall.org/multipart",
+    "httpMethod": "POST",
+    "reqAuthType": "none",
+    "reqAuthToken": "",
+    "reqContentType": "multipart/form-data",
+    "reqHeaders": {},
+    "reqPayload": "test/fixtures/multipart-payload.txt",
+    "resFile": ""
+}
