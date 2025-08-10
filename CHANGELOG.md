@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0 (10/08/2025)
+
+### New Feature
+- Added response time support
+
+### Improvements
+- Improved error handling
+- Fixed issues
+
 ## v1.2.0 (30/11/2023)
 
 ### New Feature
