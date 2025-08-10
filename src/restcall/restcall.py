@@ -123,14 +123,20 @@ def uncurlify(inputfilepath:str, outputfilepath:str):
 
     parse_context = api.parse_context(curl_command)
     authType, authToken = _extract_authorization(parse_context.headers)
-    headers = dict(map(lambda x: (x[0].lower(), x[1]), parse_context.headers.items()))
+    headers_with_content_type = list(map(lambda x: x[1], filter(lambda x: x[0].lower() == "content-type", parse_context.headers.items())))
+    if headers_with_content_type:
+        content_type = headers_with_content_type[0]
+    else:
+        print("WARNING: Content-Type not found")
+        content_type = ''
+    headers_without_content_type = dict(filter(lambda x: x[0].lower() != "content-type", parse_context.headers.items()))
     generate_template(outputfilepath,
             parse_context.url,
             parse_context.method.upper(),
             authType,
             authToken,
-            headers.pop('content-type',''),
-            headers,
+            content_type,
+            headers_without_content_type,
             json.loads(parse_context.data) if parse_context.data else "",
             "")
 
