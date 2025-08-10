@@ -123,13 +123,14 @@ def uncurlify(inputfilepath:str, outputfilepath:str):
 
     parse_context = api.parse_context(curl_command)
     authType, authToken = _extract_authorization(parse_context.headers)
+    headers = dict(map(lambda x: (x[0].lower(), x[1]), parse_context.headers.items()))
     generate_template(outputfilepath,
             parse_context.url,
             parse_context.method.upper(),
             authType,
             authToken,
-            parse_context.headers.pop('Content-Type',''),
-            parse_context.headers,
+            headers.pop('content-type',''),
+            headers,
             json.loads(parse_context.data) if parse_context.data else "",
             "")
 
@@ -164,6 +165,7 @@ def _get_payload(template:dict):
         del template['reqContentType']
 
     else:
+        print(f'WARNING: Unsupported content type in the request: {template["reqContentType"]}. Operation might fail.')
         data = template['reqPayload']
     return (data, files)
 
@@ -196,10 +198,12 @@ def _handle_external_response_file(template:dict, filepath:str, file_ext:str, co
 
 
 def _get_responsedata(res, template, filepath) -> dict:
+    res_time = res.elapsed.total_seconds()
     res_data = {
             'resStatus': res.status_code,
             'resHeaders': dict(res.headers),
-            'resSize': f'{len(res.content)/1024:.3f}K'
+            'resSize': f'{len(res.content)/1024:.3f}K',
+            'resTime': f'{res_time}s'
             }
 
     content_type = res.headers['Content-Type'] if 'Content-Type' in res.headers else ""
@@ -236,6 +240,7 @@ def _get_responsedata(res, template, filepath) -> dict:
                 filepath, '.zip', res.content)
     
     else: # Default handling
+        print(f'Unsupported content type in response: {content_type}. Storing as text.')
         res_data['resBody'] = res.text
 
     return res_data
@@ -267,8 +272,15 @@ def _do_call(template:dict, filepath:str) -> requests.Response:
 
 
 def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
-    with open(filepath) as f:
-        template = json.load(f)
+    try:
+        with open(filepath) as f:
+            template = json.load(f)
+    except Exception as e:
+        if e is FileNotFoundError:
+            print(f"Error finding restcall file: {e.args[-1]}")
+        else:
+            print(f"Error parsing restcall file: {e.args[-1]}")
+        exit(1)
 
     if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
         res = _do_call(template, filepath)
@@ -280,8 +292,8 @@ def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
     template = { **template, **res_data }
     res_filepath = filepath[:-5] + '-res.json'
     _write_template(res_filepath, template)
-    print('Response status: {}, size: {}. Output stored in {}'.format(template['resStatus'],
-        template['resSize'], res_filepath))
+    print('Response status: {}, size: {}, time: {}. Output stored in {}'.format(template['resStatus'],
+        template['resSize'], template['resTime'], res_filepath))
 
     if curlify:
         print(to_curl(res.request, verify=False))
