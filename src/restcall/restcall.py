@@ -120,6 +120,8 @@ def uncurlify(inputfilepath:str, outputfilepath:str):
         curl_command = ''.join(map(lambda l: l.removesuffix("\\\n"), f.readlines()))
         curl_command = curl_command.replace('--location', '')
         curl_command = curl_command.replace('--request', '-X')
+        curl_command = curl_command.replace('--header', '-H')
+        curl_command = curl_command.replace('--url', '')
 
     parse_context = api.parse_context(curl_command)
     authType, authToken = _extract_authorization(parse_context.headers)
