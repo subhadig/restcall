@@ -220,9 +220,14 @@ def _get_responsedata(res, template, filepath) -> dict:
     if ';' in content_type:
         content_type = content_type[:content_type.index(';')]
 
-    # If the response file has been provided in the template always store it in
+    # If the request has failed, write the response directly in the resBody irrespective
+    # of resFile value.
+    if not (200 <= res.status_code < 300):
+        res_data['resBody'] = res.text
+
+    # Otherwise if the response file has been provided in the template always store it in
     # the file
-    if template['resFile']:
+    elif template['resFile']:
         res_data['resBody'] = _handle_external_response_file(template,
                 filepath, '', res.content)
 
