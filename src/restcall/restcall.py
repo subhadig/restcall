@@ -181,12 +181,12 @@ def _get_payload(template:dict):
 def _get_reqheaders(template:dict) -> dict:
     req_headers=template['reqHeaders']
 
-    if template['reqAuthType'] == 'bearer':
+    if template['reqAuthType'].lower() == 'bearer':
         req_headers['Authorization'] = 'Bearer ' + template['reqAuthToken']
-    elif template['reqAuthType'] == 'bearer_generate':
+    elif template['reqAuthType'].lower() == 'bearer_generate':
         token_response = callrest(template['reqAuthToken'])
         req_headers['Authorization'] = 'Bearer ' + token_response['resBody']['access_token']
-    elif template['reqAuthType'] == 'basic':
+    elif template['reqAuthType'].lower() == 'basic':
         req_headers['Authorization'] = 'Basic ' + str(base64.b64encode(bytes(template['reqAuthToken'], 'utf-8')), 'utf-8')
 
     if 'reqContentType' in template:
@@ -285,30 +285,31 @@ def _do_call(template:dict, filepath:str) -> requests.Response:
 
 
 def callrest(filepath:str, curlify:bool=False) -> dict[str,object]:
+    res = None
     try:
         with open(filepath) as f:
             template = json.load(f)
-    except Exception as e:
-        if e is FileNotFoundError:
-            print(f"Error finding restcall file: {e.args[-1]}")
+        if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
+            res = _do_call(template, filepath)
         else:
-            print(f"Error parsing restcall file: {e.args[-1]}")
+            raise NotImplementedError('HTTP method not supported')
+
+        res_data = _get_responsedata(res, template, filepath)
+
+        template = { **template, **res_data }
+        res_filepath = filepath[:-5] + '-res.json'
+        _write_template(res_filepath, template)
+        print('Response status: {}, size: {}, time: {}. Output stored in {}'.format(template['resStatus'],
+            template['resSize'], template['resTime'], res_filepath))
+        return template
+    except Exception as e:
+        if isinstance(e, FileNotFoundError):
+            print(f"Error finding restcall file: {e.args[-1]}")
+        elif isinstance(e, NotImplementedError):
+            print(str(e))
+        else:
+            print(f"Error during REST call: {e}")
         exit(1)
-
-    if template['httpMethod'] in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
-        res = _do_call(template, filepath)
-    else:
-        raise NotImplementedError('HTTP method not supported')
-
-    res_data = _get_responsedata(res, template, filepath)
-
-    template = { **template, **res_data }
-    res_filepath = filepath[:-5] + '-res.json'
-    _write_template(res_filepath, template)
-    print('Response status: {}, size: {}, time: {}. Output stored in {}'.format(template['resStatus'],
-        template['resSize'], template['resTime'], res_filepath))
-
-    if curlify:
-        print(to_curl(res.request, verify=False))
-
-    return template
+    finally:
+        if curlify and res is not None:
+            print(to_curl(res.request, verify=False))
